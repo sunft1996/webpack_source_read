@@ -1,0 +1,1 @@
+const word = 'hello world'
