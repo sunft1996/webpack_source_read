@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+/*
+ * Step_1: 判断webpack包是否存在，下载 or 运行webpack
+ */
+
 'use strict';
 
 const Module = require('module');
@@ -26,7 +30,7 @@ if (utils.packageExists('webpack')) {
     runCLI(process.argv, originalModuleCompile);
 } else {
     const { promptInstallation, logger, colors } = utils;
-
+    // 询问是否下载webpack包
     promptInstallation('webpack', () => {
         utils.logger.error(`It looks like ${colors.bold('webpack')} is not installed.`);
     })

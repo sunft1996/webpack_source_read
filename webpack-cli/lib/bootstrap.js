@@ -1,6 +1,12 @@
+/*
+ * Step_2: 运行webpack-cli
+ */
 const WebpackCLI = require('./webpack-cli');
 const utils = require('./utils');
 
+/**
+ * 运行webpack-cli
+ */
 const runCLI = async (args, originalModuleCompile) => {
     try {
         // Create a new instance of the CLI object

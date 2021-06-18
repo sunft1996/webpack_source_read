@@ -1,3 +1,7 @@
+/*
+ * Step_3: 定义webpack命令和它的二级命令
+ * 二级命令分为：编译命令（build、watch等）和非编译命令
+ */
 const fs = require('fs');
 const path = require('path');
 const { pathToFileURL } = require('url');
@@ -13,7 +17,7 @@ class WebpackCLI {
         this.logger = utils.logger;
         this.utils = utils;
 
-        // Initialize program
+        // 初始化webpack命令
         this.program = program;
         this.program.name('webpack');
         this.program.configureOutput({
@@ -22,9 +26,13 @@ class WebpackCLI {
         });
     }
     /**
-     * 定义指令
-     */
+     * 定义命令
+     * @param {*} commandOptions 命令的描述对象 e.g. buildCommandOptions
+     * @param {*} options 命令的参数
+     * @param {*} action  命令对应动作
+     */    
     async makeCommand(commandOptions, options, action) {
+        // 判断命令是否已定义
         const alreadyLoaded = this.program.commands.find(
             (command) => command.name() === commandOptions.name.split(' ')[0] || command.aliases().includes(commandOptions.alias),
         );
@@ -86,7 +94,7 @@ class WebpackCLI {
                 });
             }
         }
-
+        // 定义命令的参数
         if (options) {
             if (typeof options === 'function') {
                 if (forHelp && !allDependenciesInstalled) {
@@ -105,12 +113,16 @@ class WebpackCLI {
                 this.makeOption(command, optionForCommand);
             });
         }
-        // 定义指令动作
+        // 定义命令对应的动作
         command.action(action);
 
         return command;
     }
-
+    /**
+     * 定义命令的参数
+     * @param {*} command 命令名称
+     * @param {*} option 参数
+     */    
     makeOption(command, option) {
         let mainOption;
         let negativeOption;
@@ -307,7 +319,7 @@ class WebpackCLI {
         }
     }
     /**
-     * 获取webpack命令 参数配置
+     * 获取编译命令（build、watch）的所有参数
      */    
     getBuiltInOptions() {
         if (this.builtInOptionsCache) {
@@ -617,14 +629,21 @@ class WebpackCLI {
         return options;
     }
 
+    /**
+     * 设置项目的环境变量
+     */    
     applyNodeEnv(options) {
         if (typeof options.nodeEnv === 'string') {
             process.env.NODE_ENV = options.nodeEnv;
         }
     }
 
+    /**
+     * 核心函数：
+     * 定义webpack命令和它的二级命令
+     */    
     async run(args, parseOptions) {
-        // Built-in internal commands
+        // build命令的描述对象，定义build命令时会用到
         const buildCommandOptions = {
             name: 'build [entries...]',
             alias: ['bundle', 'b'],
@@ -727,32 +746,36 @@ class WebpackCLI {
             value === '--version' ||
             value === '-h' ||
             value === '--help';
-
+        /**
+         * 加载命令，根据不同命令类型来定义命令
+         */        
         const loadCommandByName = async (commandName, allowToInstall = false) => {
-            // 判断是否是build指令
             const isBuildCommandUsed = isCommand(commandName, buildCommandOptions);
-            // 判断是否是watch指令
             const isWatchCommandUsed = isCommand(commandName, watchCommandOptions);
-
+            // 输入build or watch命令
             if (isBuildCommandUsed || isWatchCommandUsed) {
+                // 获取所有编译命令的参数
                 const options = this.getBuiltInOptions();
-                // 定义build or watch指令
+                // 定义build or watch命令
                 await this.makeCommand(
                     isBuildCommandUsed ? buildCommandOptions : watchCommandOptions,
                     isWatchCommandUsed ? options.filter((option) => option.name !== 'watch') : options,
+                    // 定义命令对应的action
                     async (entries, options) => {
                         if (entries.length > 0) {
                             options.entry = [...entries, ...(options.entry || [])];
                         }
-
+                        // 执行编译
                         await this.buildCommand(options, isWatchCommandUsed);
                     },
                 );
-            } else if (isCommand(commandName, helpCommandOptions)) {
-                // Stub for the `help` command
+            } 
+            // 输入help命令
+            else if (isCommand(commandName, helpCommandOptions)) {
                 this.makeCommand(helpCommandOptions, [], () => {});
-            } else if (isCommand(commandName, versionCommandOptions)) {
-                // Stub for the `help` command
+            } 
+            // 输入version命令
+            else if (isCommand(commandName, versionCommandOptions)) {
                 this.makeCommand(versionCommandOptions, [], () => {});
             } else {
                 const builtInExternalCommandInfo = externalBuiltInCommandsInfo.find(
@@ -812,7 +835,7 @@ class WebpackCLI {
         };
 
         // Register own exit
-        // 注册exit时的回调
+        // 重写命令注册错误时的回调
         this.program.exitOverride(async (error) => {
             if (error.exitCode === 0) {
                 process.exit(0);
@@ -1201,9 +1224,9 @@ class WebpackCLI {
 
         let isInternalActionCalled = false;
 
-        // Default action
         this.program.usage('[options]');
         this.program.allowUnknownOption(true);
+        // 定义输入webpack的默认action
         this.program.action(async (options, program) => {
             if (!isInternalActionCalled) {
                 isInternalActionCalled = true;
@@ -1212,8 +1235,9 @@ class WebpackCLI {
                 process.exit(2);
             }
 
-            // Command and options
+            // operands：输入的命令，unknown：输入的参数
             const { operands, unknown } = this.program.parseOptions(program.args);
+            // 默认命令：build
             const defaultCommandToRun = getCommandName(buildCommandOptions.name);
             const hasOperand = typeof operands[0] !== 'undefined';
             const operand = hasOperand ? operands[0] : defaultCommandToRun;
@@ -1250,7 +1274,7 @@ class WebpackCLI {
 
             const isVersionOption = typeof options.version !== 'undefined';
             const isVersionCommandSyntax = isCommand(operand, versionCommandOptions);
-
+            // 输入参数是版本参数：-v等
             if (isVersionOption || isVersionCommandSyntax) {
                 const optionsForVersion = []
                     .concat(isVersionOption ? [operand] : [])
@@ -1262,7 +1286,7 @@ class WebpackCLI {
 
             let commandToRun = operand;
             let commandOperands = operands.slice(1);
-
+            // 加载命令 
             if (isKnownCommand(commandToRun)) {
                 await loadCommandByName(commandToRun, true);
             } else {
@@ -1837,8 +1861,14 @@ class WebpackCLI {
 
         return error instanceof ValidationError || error.name === 'ValidationError';
     }
-
+    /**
+     * 创建compiler对象
+     * @param {*} options webpack配置
+     * @param {*} callback
+     * @returns {Object} compiler
+     */    
     async createCompiler(options, callback) {
+        // 设置环境变量
         this.applyNodeEnv(options);
 
         let config = await this.resolveConfig(options);
@@ -1879,10 +1909,15 @@ class WebpackCLI {
 
         return compiler;
     }
-
+    /**
+     * 执行编译
+     * @param {*} options 命令的参数
+     * @param {*} isWatchCommand 是否watch命令
+     */    
     async buildCommand(options, isWatchCommand) {
         let compiler;
 
+        // 创建完compiler后的回调函数
         const callback = (error, stats) => {
             if (error) {
                 this.logger.error(error);
@@ -1955,7 +1990,7 @@ class WebpackCLI {
         if (isWatchCommand) {
             options.watch = true;
         }
-
+        // 创建compiler对象
         compiler = await this.createCompiler(options, callback);
 
         if (!compiler) {
@@ -1969,6 +2004,7 @@ class WebpackCLI {
             process.stdin.on('end', () => {
                 process.exit(0);
             });
+            // 从可读流中读取
             process.stdin.resume();
         }
     }

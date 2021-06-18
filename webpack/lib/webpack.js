@@ -91,6 +91,7 @@ const createCompiler = rawOptions => {
  */
 
 /**
+ * 生成compiler对象
  * @callback WebpackFunctionMulti
  * @param {ReadonlyArray<WebpackOptions> & MultiCompilerOptions} options options objects
  * @param {Callback<MultiStats>=} callback callback
