@@ -1917,7 +1917,7 @@ class WebpackCLI {
     async buildCommand(options, isWatchCommand) {
         let compiler;
 
-        // 创建完compiler后的回调函数
+        // watch 和 compiler close时的回调函数
         const callback = (error, stats) => {
             if (error) {
                 this.logger.error(error);

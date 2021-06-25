@@ -276,6 +276,7 @@ class WebpackOptionsApply extends OptionsApply {
 		}
 
 		new EntryOptionPlugin().apply(compiler);
+		// 格式化entry options
 		compiler.hooks.entryOption.call(options.context, options.entry);
 
 		new RuntimePlugin().apply(compiler);

@@ -1,4 +1,9 @@
 /*
+ * compile即webpack的编译器
+ * Step_5: compile对象的生命周期
+ */
+
+/*
 	MIT License http://www.opensource.org/licenses/mit-license.php
 	Author Tobias Koppers @sokra
 */
@@ -278,6 +283,7 @@ class Compiler {
 	}
 
 	/**
+	 * 创建一个基础设施水平的日志
 	 * @param {string | (function(): string)} name name of the logger, or function called once to get the logger name
 	 * @returns {Logger} a logger with that name
 	 */
@@ -419,7 +425,9 @@ class Compiler {
 		const startTime = Date.now();
 
 		this.running = true;
-
+		/**
+		 * 编译结束时的回调
+		 */		
 		const onCompiled = (err, compilation) => {
 			if (err) return finalCallback(err);
 
@@ -486,15 +494,18 @@ class Compiler {
 		};
 
 		const run = () => {
+			// 发布beforeRun hook，相关插件执行
 			this.hooks.beforeRun.callAsync(this, err => {
 				if (err) return finalCallback(err);
-
+				// 发布run hook，相关插件执行
 				this.hooks.run.callAsync(this, err => {
 					if (err) return finalCallback(err);
 
 					this.readRecords(err => {
 						if (err) return finalCallback(err);
 
+
+						// 执行编译
 						this.compile(onCompiled);
 					});
 				});
@@ -1072,7 +1083,7 @@ ${other}`);
 			if (err) return callback(err);
 
 			this.hooks.compile.call(params);
-
+			// 创建compilation对象，传入make钩子
 			const compilation = this.newCompilation(params);
 
 			const logger = compilation.getLogger("webpack.Compiler");

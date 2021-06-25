@@ -42,8 +42,12 @@ class EntryPlugin {
 		);
 
 		const { entry, options, context } = this;
+		// entry模块的依赖模块
 		const dep = EntryPlugin.createDependency(entry, options);
-
+		/*
+		 * EntryPlugin订阅 make hook
+		 * Step_6: compilation调用addEntry方法
+		 */
 		compiler.hooks.make.tapAsync("EntryPlugin", (compilation, callback) => {
 			compilation.addEntry(context, dep, options, err => {
 				callback(err);

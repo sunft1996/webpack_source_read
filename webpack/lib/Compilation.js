@@ -1819,7 +1819,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				)
 			);
 		}
-
+		// 开始生成模块
 		this.handleModuleCreation(
 			{
 				factory: moduleFactory,
@@ -1831,6 +1831,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			err => {
 				if (err && this.bail) {
 					callback(err);
+					// 错误则停止以下队列
 					this.buildQueue.stop();
 					this.rebuildQueue.stop();
 					this.processDependenciesQueue.stop();
@@ -1844,8 +1845,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 	/**
 	 * @param {string} context context path for entry
-	 * @param {Dependency} entry entry dependency that should be followed
-	 * @param {string | EntryOptions} optionsOrName options or deprecated name of entry
+	 * @param {Dependency} entry entry模块的依赖模块
+	 * @param {string | EntryOptions} optionsOrName entry的options
 	 * @param {ModuleCallback} callback callback function
 	 * @returns {void} returns
 	 */
@@ -1880,7 +1881,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	 * @param {string} context context path for entry
 	 * @param {Dependency} entry entry dependency that should be followed
 	 * @param {"dependencies" | "includeDependencies"} target type of entry
-	 * @param {EntryOptions} options options
+	 * @param {EntryOptions} options entry options
 	 * @param {ModuleCallback} callback callback function
 	 * @returns {void} returns
 	 */

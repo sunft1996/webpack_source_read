@@ -1,17 +1,16 @@
 const path = require('path')
 
 const config = {
-  mode: 'production',
+  mode: 'development',
   entry: {
-    app: [
-      './index.js'
-    ]
+    test: './test/index.js',
   },
   output: {
     filename: '[name].[fullhash].js',
     path: path.resolve(__dirname, 'dist'),
-    chunkFilename: '[name].[chunkhash].js'
   },
+  recordsInputPath: path.join(__dirname, 'records.json'),
+  recordsOutputPath: path.join(__dirname, 'newRecords.json'),
   
   module: {
     rules: [

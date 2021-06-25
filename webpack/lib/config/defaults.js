@@ -43,6 +43,7 @@ const {
 const NODE_MODULES_REGEXP = /[\\/]node_modules[\\/]/i;
 
 /**
+ * 为对象的某个空属性设置默认值
  * Sets a constant default value when undefined
  * @template T
  * @template {keyof T} P
@@ -58,6 +59,7 @@ const D = (obj, prop, value) => {
 };
 
 /**
+ * 为对象的空属性设置默认值，通过工厂函数
  * Sets a dynamic default value when undefined, by calling the factory function
  * @template T
  * @template {keyof T} P
@@ -116,6 +118,7 @@ const A = (obj, prop, factory) => {
  * @returns {void}
  */
 const applyWebpackOptionsBaseDefaults = options => {
+	// 为options.context设置缺省值
 	F(options, "context", () => process.cwd());
 	applyInfrastructureLoggingDefaults(options.infrastructureLogging);
 };
@@ -1097,7 +1100,9 @@ const getResolveLoaderDefaults = ({ cache }) => {
  * @returns {void}
  */
 const applyInfrastructureLoggingDefaults = infrastructureLogging => {
+	// 定义 infrastructureLogging.stream 为 process.stderr
 	F(infrastructureLogging, "stream", () => process.stderr);
+	// process.stderr是否来自非dumb的终端
 	const tty =
 		/** @type {any} */ (infrastructureLogging.stream).isTTY &&
 		process.env.TERM !== "dumb";

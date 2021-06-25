@@ -1,4 +1,8 @@
 /*
+ * Step_4: 创建compile对象，运行compile.run() or .watch()
+ */
+
+/*
 	MIT License http://www.opensource.org/licenses/mit-license.php
 	Author Tobias Koppers @sokra
 */
@@ -66,6 +70,7 @@ const createCompiler = rawOptions => {
 	new NodeEnvironmentPlugin({
 		infrastructureLogging: options.infrastructureLogging
 	}).apply(compiler);
+	// 加载配置的所有插件，插件订阅compiler对应的hook
 	if (Array.isArray(options.plugins)) {
 		for (const plugin of options.plugins) {
 			if (typeof plugin === "function") {
@@ -78,6 +83,7 @@ const createCompiler = rawOptions => {
 	applyWebpackOptionsDefaults(options);
 	compiler.hooks.environment.call();
 	compiler.hooks.afterEnvironment.call();
+	// 将webpack的options标准化
 	new WebpackOptionsApply().process(options, compiler);
 	compiler.hooks.initialize.call();
 	return compiler;
@@ -106,6 +112,7 @@ const webpack = /** @type {WebpackFunctionSingle & WebpackFunctionMulti} */ (
 	 */
 	(options, callback) => {
 		const create = () => {
+			// 校验输入的options
 			if (!webpackOptionsSchemaCheck(options)) {
 				getValidateSchema()(webpackOptionsSchema, options);
 			}
@@ -131,6 +138,7 @@ const webpack = /** @type {WebpackFunctionSingle & WebpackFunctionMulti} */ (
 			}
 			return { compiler, watch, watchOptions };
 		};
+		// 正常情况下都会传入callback
 		if (callback) {
 			try {
 				const { compiler, watch, watchOptions } = create();
