@@ -309,7 +309,7 @@ class NormalModuleFactory extends ModuleFactory {
 									if (!resolveData.request) {
 										return callback(new Error("Empty dependency (no request)"));
 									}
-
+									// 最终调用构造函数来创建 NormalModule
 									createdModule = new NormalModule(createData);
 								}
 
@@ -523,6 +523,7 @@ class NormalModuleFactory extends ModuleFactory {
 							);
 						}
 						try {
+							// 初始化resolveData.createData
 							Object.assign(data.createData, {
 								layer:
 									layer === undefined ? contextInfo.issuerLayer || null : layer,

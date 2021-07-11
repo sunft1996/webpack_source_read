@@ -1204,6 +1204,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	}
 
 	/**
+	 * 将Factory生成的模块放入compilation.modules
 	 * @param {Module} module module to be added that was created
 	 * @param {ModuleCallback} callback returns the module in the compilation,
 	 * it could be the passed one (if new), or an already existing in the compilation
@@ -1237,6 +1238,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				module = cacheModule;
 			}
 			this._modules.set(identifier, module);
+			// 将Factory生成的模块放入compilation.modules
 			this.modules.add(module);
 			ModuleGraph.setModuleGraphForModule(module, this.moduleGraph);
 			if (currentProfile !== undefined) {
@@ -1404,6 +1406,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		 * @returns {void}
 		 */
 		const processDependency = dep => {
+			// console.log('dep',dep.constructor)
 			this.moduleGraph.setParents(dep, currentBlock, module);
 			const resourceIdent = dep.getResourceIdentifier();
 			if (resourceIdent !== undefined && resourceIdent !== null) {
@@ -1531,6 +1534,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	 */
 
 	/**
+	 * 生成模块
 	 * @param {HandleModuleCreationOptions} options options object
 	 * @param {ModuleCallback} callback callback
 	 * @returns {void}
@@ -1551,6 +1555,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 		const currentProfile = this.profile ? new ModuleProfile() : undefined;
 
+		// 加入factorizeQueue队列创建模块
 		this.factorizeModule(
 			{
 				currentProfile,
@@ -1560,6 +1565,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				contextInfo,
 				context
 			},
+			// 返回创建后的模块，为NormalModule的实例
 			(err, newModule) => {
 				if (err) {
 					if (dependencies.every(d => d.optional)) {
@@ -1577,7 +1583,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				if (currentProfile !== undefined) {
 					moduleGraph.setProfile(newModule, currentProfile);
 				}
-
+				// 模块加入addModuleQueue队列，最终加入到compilation.modules
 				this.addModule(newModule, (err, module) => {
 					if (err) {
 						if (!err.module) {
@@ -1646,7 +1652,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 							}
 						}
 					}
-
+					// 模块加入buildQueue队列处理
 					this.buildModule(module, err => {
 						if (creatingModuleDuringBuildSet !== undefined) {
 							creatingModuleDuringBuildSet.delete(module);
@@ -1670,7 +1676,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						if (this.processDependenciesQueue.isProcessing(module)) {
 							return callback();
 						}
-
+						// 模块加入processDependenciesQueue队列
 						this.processModuleDependencies(module, err => {
 							if (err) {
 								return callback(err);
@@ -1721,6 +1727,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		if (currentProfile !== undefined) {
 			currentProfile.markFactoryStart();
 		}
+		// Factory利用Dependency创建模块
 		factory.create(
 			{
 				contextInfo: {
@@ -1793,6 +1800,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	}
 
 	/**
+	 * 在调用该方法前 当前需要处理的Dependency一定已经和对应的Factory绑定了， 绑定关系位于 this.dependencyFactories
 	 * @param {Object} options options
 	 * @param {string} options.context context string path
 	 * @param {Dependency} options.dependency dependency used to create Module chain
@@ -1810,7 +1818,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				new WebpackError("Parameter 'dependency' must be a Dependency")
 			);
 		}
+		// 根据Dependency对象的contructor来判断是哪种Dependency，常见的有EntryDependency、AMDRequireDependency、AMDDefineDependency、AMDRequireArrayDependency、 CommonJsRequireDependency、SystemImportDependency
 		const Dep = /** @type {DepConstructor} */ (dependency.constructor);
+		// 选择对应的 Factory函数处理 Dependency
 		const moduleFactory = this.dependencyFactories.get(Dep);
 		if (!moduleFactory) {
 			return callback(
@@ -1819,7 +1829,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				)
 			);
 		}
-		// 开始生成模块
+		// 生成模块
 		this.handleModuleCreation(
 			{
 				factory: moduleFactory,
@@ -1845,7 +1855,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 	/**
 	 * @param {string} context context path for entry
-	 * @param {Dependency} entry entry模块的依赖模块
+	 * @param {Dependency} entry entry模块对应的dependencys对象，即 entryDepencys
 	 * @param {string | EntryOptions} optionsOrName entry的options
 	 * @param {ModuleCallback} callback callback function
 	 * @returns {void} returns
@@ -1879,7 +1889,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 	/**
 	 * @param {string} context context path for entry
-	 * @param {Dependency} entry entry dependency that should be followed
+	 * @param {Dependency} entry entry dependency that should be followed 即：entry模块对应的dependencys对象
 	 * @param {"dependencies" | "includeDependencies"} target type of entry
 	 * @param {EntryOptions} options entry options
 	 * @param {ModuleCallback} callback callback function
@@ -1898,7 +1908,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					...options
 				}
 			};
+			// entryData.dependencies push entryDependency
 			entryData[target].push(entry);
+			// compilation.entries = entryData
 			this.entries.set(name, entryData);
 		} else {
 			entryData[target].push(entry);
@@ -1923,7 +1935,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				}
 			}
 		}
-
+		// 没调用啥必须的插件
 		this.hooks.addEntry.call(entry, options);
 
 		this.addModuleTree(
@@ -3758,6 +3770,7 @@ This prevents using hashes of each other and should be avoided.`);
 	}
 
 	/**
+	 * todo 打包后代码生成
 	 * @param {Callback} callback signals when the call finishes
 	 * @returns {void}
 	 */

@@ -445,6 +445,7 @@ class Compiler {
 			process.nextTick(() => {
 				logger = compilation.getLogger("webpack.Compiler");
 				logger.time("emitAssets");
+				// 文件输出到目录
 				this.emitAssets(compilation, err => {
 					logger.timeEnd("emitAssets");
 					if (err) return finalCallback(err);
@@ -1034,6 +1035,7 @@ ${other}`);
 	}
 
 	/**
+	 * 新建compilation对象进行编译
 	 * @param {CompilationParams} params the compilation parameters
 	 * @returns {Compilation} the created compilation
 	 */
@@ -1042,6 +1044,7 @@ ${other}`);
 		compilation.name = this.name;
 		compilation.records = this.records;
 		this.hooks.thisCompilation.call(compilation, params);
+		// 会通知EntryPlugin设置EntryDependency对应的factory
 		this.hooks.compilation.call(compilation, params);
 		return compilation;
 	}
@@ -1078,17 +1081,19 @@ ${other}`);
 	 * @returns {void}
 	 */
 	compile(callback) {
+		// 新建 NormalModuleFactory、createContextModuleFactory
 		const params = this.newCompilationParams();
 		this.hooks.beforeCompile.callAsync(params, err => {
 			if (err) return callback(err);
 
 			this.hooks.compile.call(params);
-			// 创建compilation对象，传入make钩子
+			// 入参数为工厂函数，来新建compilation对象
 			const compilation = this.newCompilation(params);
 
 			const logger = compilation.getLogger("webpack.Compiler");
 
 			logger.time("make hook");
+			// compilation传入make钩子
 			this.hooks.make.callAsync(compilation, err => {
 				logger.timeEnd("make hook");
 				if (err) return callback(err);

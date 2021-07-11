@@ -140,6 +140,7 @@ const EMPTY_COMMENT_OPTIONS = {
 	errors: null
 };
 
+// js Parser
 class JavascriptParser extends Parser {
 	/**
 	 * @param {"module" | "script" | "auto"} sourceType default source type
@@ -3242,6 +3243,7 @@ class JavascriptParser extends Parser {
 	}
 
 	/**
+	 * 解析js代码
 	 * @param {string | Buffer | PreparsedAst} source the source to parse
 	 * @param {ParserState} state the parser state
 	 * @returns {ParserState} the parser state
@@ -3261,6 +3263,7 @@ class JavascriptParser extends Parser {
 			comments = source.comments;
 		} else {
 			comments = [];
+			// 生成ast，内部调用了acorn
 			ast = JavascriptParser._parse(source, {
 				sourceType: this.sourceType,
 				onComment: comments,
@@ -3696,6 +3699,7 @@ class JavascriptParser extends Parser {
 		let error;
 		let threw = false;
 		try {
+			// 调用acorn来生成ast
 			ast = /** @type {AnyNode} */ (parser.parse(code, parserOptions));
 		} catch (e) {
 			error = e;

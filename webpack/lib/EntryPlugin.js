@@ -31,9 +31,11 @@ class EntryPlugin {
 	 * @returns {void}
 	 */
 	apply(compiler) {
+		// EntryPlugin订阅 compilation hook
 		compiler.hooks.compilation.tap(
 			"EntryPlugin",
 			(compilation, { normalModuleFactory }) => {
+				// 设置EntryDependency对应的factory
 				compilation.dependencyFactories.set(
 					EntryDependency,
 					normalModuleFactory
@@ -42,7 +44,7 @@ class EntryPlugin {
 		);
 
 		const { entry, options, context } = this;
-		// entry模块的依赖模块
+		// entry模块对应的dependencys对象
 		const dep = EntryPlugin.createDependency(entry, options);
 		/*
 		 * EntryPlugin订阅 make hook

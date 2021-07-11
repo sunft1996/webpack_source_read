@@ -753,6 +753,7 @@ class NormalModule extends Module {
 			processResult(err);
 			return;
 		}
+		// 调用runLoaders来调用对应的loader对模块编译
 		runLoaders(
 			{
 				resource: this.resource,
@@ -1015,6 +1016,7 @@ class NormalModule extends Module {
 
 			let result;
 			try {
+				// 调用parser来解析代码
 				result = this.parser.parse(this._ast || this._source.source(), {
 					current: this,
 					module: this,
