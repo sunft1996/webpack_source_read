@@ -709,9 +709,10 @@ class NormalModule extends Module {
 				});
 				return callback(error);
 			}
-
+			// loader转化后的source
 			const source = result[0];
 			const sourceMap = result.length >= 1 ? result[1] : null;
+			// 就是loader返回的meta对象，一般可以用来存储源source的ast
 			const extraInfo = result.length >= 2 ? result[2] : null;
 
 			if (!Buffer.isBuffer(source) && typeof source !== "string") {
@@ -728,7 +729,7 @@ class NormalModule extends Module {
 				const error = new ModuleBuildError(err);
 				return callback(error);
 			}
-
+			// loader结果转成source对象，可用source()获得string
 			this._source = this.createSource(
 				options.context,
 				this.binary ? asBuffer(source) : asString(source),
@@ -736,6 +737,7 @@ class NormalModule extends Module {
 				compilation.compiler.root
 			);
 			if (this._sourceSizes !== undefined) this._sourceSizes.clear();
+			// 如果有loader把ast结果存入了extraInfo，则存入_ast，避免parser重复转化
 			this._ast =
 				typeof extraInfo === "object" &&
 				extraInfo !== null &&
@@ -753,7 +755,7 @@ class NormalModule extends Module {
 			processResult(err);
 			return;
 		}
-		// 调用runLoaders来调用对应的loader对模块编译
+		// 调用runLoaders来调用对应的loader对模块转化
 		runLoaders(
 			{
 				resource: this.resource,
@@ -863,7 +865,7 @@ class NormalModule extends Module {
 		// no match found, so this module !should! be parsed
 		return false;
 	}
-
+	// 给compilation创建hash
 	_initBuildHash(compilation) {
 		const hash = createHash(compilation.outputOptions.hashFunction);
 		if (this._source) {

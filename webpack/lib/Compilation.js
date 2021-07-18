@@ -1406,7 +1406,6 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		 * @returns {void}
 		 */
 		const processDependency = dep => {
-			// console.log('dep',dep.constructor)
 			this.moduleGraph.setParents(dep, currentBlock, module);
 			const resourceIdent = dep.getResourceIdentifier();
 			if (resourceIdent !== undefined && resourceIdent !== null) {

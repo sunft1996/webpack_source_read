@@ -1472,6 +1472,7 @@ class JavascriptParser extends Parser {
 		}
 		switch (statement.type) {
 			case "ImportDeclaration":
+				// 处理import语句
 				this.blockPreWalkImportDeclaration(statement);
 				break;
 			case "ExportAllDeclaration":
@@ -1824,6 +1825,7 @@ class JavascriptParser extends Parser {
 
 	blockPreWalkImportDeclaration(statement) {
 		const source = statement.source.value;
+		// 收集依赖：通知 HarmonyImportDependencyParserPlugin 执行 module.addDependency
 		this.hooks.import.call(statement, source);
 		for (const specifier of statement.specifiers) {
 			const name = specifier.local.name;
@@ -3293,6 +3295,7 @@ class JavascriptParser extends Parser {
 		this.prevStatement = undefined;
 		if (this.hooks.program.call(ast, comments) === undefined) {
 			this.detectMode(ast.body);
+			// 遍历ast节点
 			this.preWalkStatements(ast.body);
 			this.prevStatement = undefined;
 			this.blockPreWalkStatements(ast.body);

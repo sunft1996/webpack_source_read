@@ -1018,6 +1018,7 @@ If changing the source code is not an option there is also a resolve options cal
 		if (!parser) {
 			throw new Error(`No parser registered for ${type}`);
 		}
+		// todo
 		this.hooks.parser.for(type).call(parser, parserOptions);
 		return parser;
 	}
