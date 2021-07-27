@@ -233,6 +233,7 @@ class JavascriptModulesPlugin {
 								chunk,
 								outputOptions
 							);
+						// todo: 热更新？？？？
 						if (hotUpdateChunk) {
 							render = () =>
 								this.renderChunk(

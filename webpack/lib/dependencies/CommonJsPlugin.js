@@ -35,6 +35,7 @@ class CommonJsPlugin {
 		compiler.hooks.compilation.tap(
 			"CommonJsPlugin",
 			(compilation, { contextModuleFactory, normalModuleFactory }) => {
+				// 设置CommonJsRequireDependency对应的factory
 				compilation.dependencyFactories.set(
 					CommonJsRequireDependency,
 					normalModuleFactory

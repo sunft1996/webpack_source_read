@@ -1580,6 +1580,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				}
 
 				if (currentProfile !== undefined) {
+					// Profile包含当前模块的构建状态，如：buildingStartTime、building等
 					moduleGraph.setProfile(newModule, currentProfile);
 				}
 				// 模块加入addModuleQueue队列，最终加入到compilation.modules
@@ -1595,6 +1596,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 					for (let i = 0; i < dependencies.length; i++) {
 						const dependency = dependencies[i];
+						// webpack 5 新增：
+						// 取消在依赖关系中存储模块，而使用 ModulGraph存储模块的连接信息
+						// 取消在chunk中存储模块，而使用 ChunkGraph存储模块和模块和chunk的连接信息
 						moduleGraph.setResolvedModule(
 							connectOrigin ? originModule : null,
 							dependency,
@@ -2009,7 +2013,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			});
 		});
 	}
-
+	// 结束编译，提示模块的警告和错误
 	finish(callback) {
 		if (this.profile) {
 			this.logger.time("finish module profiles");
@@ -2253,7 +2257,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		}
 
 		this.hooks.seal.call();
-
+		// 优化模块
 		this.logger.time("optimize dependencies");
 		while (this.hooks.optimizeDependencies.call(this.modules)) {
 			/* empty */
@@ -2851,6 +2855,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 	// TODO webpack 6 make chunkGraph argument non-optional
 	/**
+	 * todo: 添加运行时模块？？？？
 	 * @param {Chunk} chunk target chunk
 	 * @param {RuntimeModule} module runtime module
 	 * @param {ChunkGraph} chunkGraph the chunk graph
@@ -3769,7 +3774,7 @@ This prevents using hashes of each other and should be avoided.`);
 	}
 
 	/**
-	 * todo 打包后代码生成
+	 * 编译后代码生成
 	 * @param {Callback} callback signals when the call finishes
 	 * @returns {void}
 	 */

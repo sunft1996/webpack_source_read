@@ -1044,7 +1044,7 @@ ${other}`);
 		compilation.name = this.name;
 		compilation.records = this.records;
 		this.hooks.thisCompilation.call(compilation, params);
-		// 会通知EntryPlugin设置EntryDependency对应的factory
+		// 会通知EntryPlugin、CommonJsPlugin等插件设置dependency对应的factory
 		this.hooks.compilation.call(compilation, params);
 		return compilation;
 	}
@@ -1095,6 +1095,7 @@ ${other}`);
 			logger.time("make hook");
 			// compilation传入make钩子
 			this.hooks.make.callAsync(compilation, err => {
+				// 最后一个Module build结束后
 				logger.timeEnd("make hook");
 				if (err) return callback(err);
 
@@ -1105,6 +1106,7 @@ ${other}`);
 
 					process.nextTick(() => {
 						logger.time("finish compilation");
+						// 主要功能：提示模块的警告和错误
 						compilation.finish(err => {
 							logger.timeEnd("finish compilation");
 							if (err) return callback(err);

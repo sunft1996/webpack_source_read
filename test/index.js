@@ -1,3 +1,3 @@
 const a = require('./a')
-
-console.log(a(1))
+const b = require('./b')
+console.log(a(1), b)

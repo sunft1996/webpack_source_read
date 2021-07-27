@@ -59,9 +59,9 @@ const getConnectionsByOriginModule = set => {
 
 class ModuleGraphModule {
 	constructor() {
-		/** @type {SortableSet<ModuleGraphConnection>} */
+		/** @type {SortableSet<ModuleGraphConnection>} 内键，指向引用当前module的originModule */
 		this.incomingConnections = new SortableSet();
-		/** @type {Set<ModuleGraphConnection> | undefined} */
+		/** @type {Set<ModuleGraphConnection> | undefined} 外键，指向当前module的引用的模块 */
 		this.outgoingConnections = undefined;
 		/** @type {Module | null} */
 		this.issuer = undefined;
@@ -75,7 +75,7 @@ class ModuleGraphModule {
 		this.postOrderIndex = null;
 		/** @type {number} */
 		this.depth = null;
-		/** @type {ModuleProfile} */
+		/** @type {ModuleProfile} Profile包含当前模块的构建状态，如：buildingStartTime、building等 */
 		this.profile = undefined;
 		/** @type {boolean} */
 		this.async = false;
@@ -106,6 +106,7 @@ class ModuleGraph {
 	}
 
 	/**
+	 * 生成ModuleGraphModule，设置_moduleMap
 	 * @param {Module} module the module
 	 * @returns {ModuleGraphModule} the internal module
 	 */
@@ -154,6 +155,9 @@ class ModuleGraph {
 	}
 
 	/**
+	 * 设置模块之间的依赖
+	 * 设置 ModuleGraphModule的 incomingConnections、outgoingConnections
+	 * 设置 this._dependencyMap、设置_moduleMap
 	 * @param {Module} originModule the referencing module
 	 * @param {Dependency} dependency the referencing dependency
 	 * @param {Module} module the referenced module
@@ -168,6 +172,7 @@ class ModuleGraph {
 			dependency.weak,
 			dependency.getCondition(this)
 		);
+		// 设置 this._dependencyMap
 		this._dependencyMap.set(dependency, connection);
 		const connections = this._getModuleGraphModule(module).incomingConnections;
 		connections.add(connection);
