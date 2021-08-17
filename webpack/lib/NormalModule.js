@@ -687,6 +687,7 @@ class NormalModule extends Module {
 	 * @returns {void}
 	 */
 	doBuild(options, compilation, resolver, fs, callback) {
+		// 提供给loader的上下文，包含会用到的一些属性方法，即loader函数中用到的this
 		const loaderContext = this.createLoaderContext(
 			resolver,
 			options,

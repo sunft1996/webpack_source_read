@@ -1081,13 +1081,13 @@ ${other}`);
 	 * @returns {void}
 	 */
 	compile(callback) {
-		// 新建 NormalModuleFactory、createContextModuleFactory
+		// 新建compilation需要的参数，包含NormalModuleFactory、createContextModuleFactory
 		const params = this.newCompilationParams();
 		this.hooks.beforeCompile.callAsync(params, err => {
 			if (err) return callback(err);
 
 			this.hooks.compile.call(params);
-			// 入参数为工厂函数，来新建compilation对象
+			// 新建compilation
 			const compilation = this.newCompilation(params);
 
 			const logger = compilation.getLogger("webpack.Compiler");

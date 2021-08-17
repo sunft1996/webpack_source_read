@@ -1406,6 +1406,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		 * @returns {void}
 		 */
 		const processDependency = dep => {
+			// 给当前dependency设置_parentModule
 			this.moduleGraph.setParents(dep, currentBlock, module);
 			const resourceIdent = dep.getResourceIdentifier();
 			if (resourceIdent !== undefined && resourceIdent !== null) {
@@ -1599,6 +1600,8 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						// webpack 5 新增：
 						// 取消在依赖关系中存储模块，而使用 ModulGraph存储模块的连接信息
 						// 取消在chunk中存储模块，而使用 ChunkGraph存储模块和模块和chunk的连接信息
+						// 功能：设置模块之间的依赖
+						// 设置 ModuleGraphModule的 incomingConnections、outgoingConnections 设置 this._dependencyMap、设置_moduleMap
 						moduleGraph.setResolvedModule(
 							connectOrigin ? originModule : null,
 							dependency,
@@ -2249,15 +2252,17 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	 * @returns {void}
 	 */
 	seal(callback) {
+		// 根据moduleGraph生成chunkGraph
 		const chunkGraph = new ChunkGraph(this.moduleGraph);
 		this.chunkGraph = chunkGraph;
 
 		for (const module of this.modules) {
+			// 设置 chunkGraphForModuleMap保存 module对应chunkGraph的关系
 			ChunkGraph.setChunkGraphForModule(module, chunkGraph);
 		}
 
 		this.hooks.seal.call();
-		// 优化模块
+		// 优化模块，tree shaking等发生？？？
 		this.logger.time("optimize dependencies");
 		while (this.hooks.optimizeDependencies.call(this.modules)) {
 			/* empty */
@@ -2267,16 +2272,22 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 		this.logger.time("create chunks");
 		this.hooks.beforeChunks.call();
+		// 冻结最终的 moduleGraph
 		this.moduleGraph.freeze();
 		/** @type {Map<Entrypoint, Module[]>} */
 		const chunkGraphInit = new Map();
+		// 新建chunk，并设置entrypoint、chunkGroup、chunkGraph
 		for (const [name, { dependencies, includeDependencies, options }] of this
 			.entries) {
+			// 新建chunk保存到this.chunks && 初始化chunkGraph
 			const chunk = this.addChunk(name);
 			if (options.filename) {
 				chunk.filenameTemplate = options.filename;
 			}
+			// 生成入口点， Entrypoint继承了ChunkGroup
 			const entrypoint = new Entrypoint(options);
+			// entry option 设置了runtime，则生成一个runtime chunk
+			// info: 由于大部分bundle的运行时代码都差不多，webpack5允许将运行时单独打包，提供给多个bundle共同使用，可以减少代码体积
 			if (!options.dependOn && !options.runtime) {
 				entrypoint.setRuntimeChunk(chunk);
 			}
@@ -2286,6 +2297,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			this.chunkGroups.push(entrypoint);
 			connectChunkGroupAndChunk(entrypoint, chunk);
 
+			// 设置chunkGraph
 			for (const dep of [...this.globalEntry.dependencies, ...dependencies]) {
 				entrypoint.addOrigin(null, { name }, /** @type {any} */ (dep).request);
 
@@ -2394,6 +2406,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 				entry.setRuntimeChunk(chunk);
 			}
 		}
+		// 构建chunkGraph
 		buildChunkGraph(this, chunkGraphInit);
 		this.hooks.afterChunks.call(this.chunks);
 		this.logger.timeEnd("create chunks");
@@ -2984,6 +2997,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 	}
 
 	/**
+	 * 新建chunk保存到this.chunks && 初始化chunkGraph；
 	 * This method first looks to see if a name is provided for a new chunk,
 	 * and first looks to see if any named chunks already exist and reuse that chunk instead.
 	 *
