@@ -1,3 +1,3 @@
 const a = require('./a')
-const b = require('./b')
-console.log(a(1), b)
+
+console.log('执行了：',a)

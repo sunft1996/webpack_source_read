@@ -567,13 +567,14 @@ class Compiler {
 
 		const emitFiles = err => {
 			if (err) return callback(err);
-
+			// 获得assets
 			const assets = compilation.getAssets();
 			compilation.assets = { ...compilation.assets };
 			/** @type {Map<string, { path: string, source: Source, size: number, waiting: { cacheEntry: any, file: string }[] }>} */
 			const caseInsensitiveMap = new Map();
 			/** @type {Set<string>} */
 			const allTargetPaths = new Set();
+			// 遍历assets，输出到目录
 			asyncLib.forEachLimit(
 				assets,
 				15,
@@ -693,6 +694,7 @@ ${other}`);
 						 * @returns {void}
 						 */
 						const doWrite = content => {
+							// 输出到目录
 							this.outputFileSystem.writeFile(targetPath, content, err => {
 								if (err) return callback(err);
 

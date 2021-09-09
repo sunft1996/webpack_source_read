@@ -1498,10 +1498,11 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 		// This is nested so we need to allow one additional task
 		this.processDependenciesQueue.increaseParallelism();
-
+		// 异步遍历依赖
 		asyncLib.forEach(
 			sortedDependencies,
 			(item, callback) => {
+				// 生成依赖的module
 				this.handleModuleCreation(item, err => {
 					// In V8, the Error objects keep a reference to the functions on the stack. These warnings &
 					// errors are created inside closures that keep a reference to the Compilation, so errors are
@@ -1511,6 +1512,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						err.stack = err.stack;
 						return callback(err);
 					}
+					// 这里调用的是compiler的make hook回调
 					callback();
 				});
 			},
@@ -2262,7 +2264,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		}
 
 		this.hooks.seal.call();
-		// 优化模块，tree shaking等发生？？？
+		// 优化模块，tree shaking等发生？？？根据是否是副作用更新了moduleGraph
 		this.logger.time("optimize dependencies");
 		while (this.hooks.optimizeDependencies.call(this.modules)) {
 			/* empty */
@@ -2418,7 +2420,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 			/* empty */
 		}
 		this.hooks.afterOptimizeModules.call(this.modules);
-
+		// SplitChunksPlugin 订阅了这个hook，新建chunk，并修改chunkGraph
 		while (this.hooks.optimizeChunks.call(this.chunks, this.chunkGroups)) {
 			/* empty */
 		}
@@ -2473,6 +2475,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 					this.logger.time("module hashing");
 					this.hooks.beforeModuleHash.call();
+					// 创建hash
 					this.createModuleHashes();
 					this.hooks.afterModuleHash.call();
 					this.logger.timeEnd("module hashing");
@@ -2738,6 +2741,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 				try {
 					codeGenerated = true;
 					this.codeGeneratedModules.add(module);
+					// generate生成的source
 					result = module.codeGeneration({
 						chunkGraph,
 						moduleGraph,

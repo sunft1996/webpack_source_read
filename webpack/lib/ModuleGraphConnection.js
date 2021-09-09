@@ -72,6 +72,7 @@ class ModuleGraphConnection {
 		this.resolvedModule = module;
 		this.module = module;
 		this.weak = weak;
+		// 状态，标记模块是否为副作用
 		this.conditional = !!condition;
 		this._active = condition !== false;
 		/** @type {function(ModuleGraphConnection, RuntimeSpec): ConnectionState} */

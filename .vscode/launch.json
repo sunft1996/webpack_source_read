@@ -12,7 +12,7 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/node_modules/.bin/webpack",
-            "args": ["serve"]
+            // "args": ["serve"]
         }
     ]
 }

@@ -9,6 +9,7 @@
 
 <script>
 import meImg from './me.jpeg';
+import './app.css';
 export default {
     name: 'app',
     data() {
@@ -20,10 +21,6 @@ export default {
 </script>
 
 <style>
-.title {
-    color: red;
-}
-.img {
-  width: 100px;
-}
+
+
 </style>

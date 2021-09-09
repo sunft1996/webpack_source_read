@@ -6,14 +6,14 @@ const webpack = require('webpack')
 const config = {
   mode: 'development',
   entry: {
-    test: './test-vue/main.js',
+    // test: './test/index.js',
+    testVue: './test-vue/main.js',
+    // testAssets: './test-assets/index.js'
   },
   output: {
-    filename: '[name].[fullhash].js',
+    filename: '[name].[chunkhash].js',
     path: path.resolve(__dirname, 'dist'),
   },
-  recordsInputPath: path.join(__dirname, 'records.json'),
-  recordsOutputPath: path.join(__dirname, 'newRecords.json'),
   
   module: {
     rules: [
@@ -43,21 +43,26 @@ const config = {
       },
     ]
   },
+  optimization: {
+    // runtimeChunk: {
+      // name: 'runtime',
+    // },
+  },
   plugins: [
     new VueLoaderPlugin(),
-    new webpack.HotModuleReplacementPlugin(),
+  //   new webpack.HotModuleReplacementPlugin(),
     new HtmlWebpackPlugin({
       template: './test-vue/index.html',
       filename: 'index.html' // 生成的文件名
     }),
   ],
-  devServer: {
-    hot: true,
-    contentBase: path.join(__dirname, 'dist'),
-    port: 8888,
-    https: false,
-    open: false
-  },
+  // devServer: {
+  //   hot: true,
+  //   contentBase: path.join(__dirname, 'dist'),
+  //   port: 8888,
+  //   https: false,
+  //   open: false
+  // },
 }
 
 
