@@ -27,6 +27,7 @@ process.title = 'webpack';
 
 // 判断webpack包是否存在
 if (utils.packageExists('webpack')) {
+    // 运行webpack-cli.js中的run()
     runCLI(process.argv, originalModuleCompile);
 } else {
     const { promptInstallation, logger, colors } = utils;

@@ -21,12 +21,12 @@ class EntryPlugin {
 	 */
 	constructor(context, entry, options) {
 		this.context = context;
-		this.entry = entry;
-		this.options = options || "";
+		this.entry = entry; // entry path
+		this.options = options || ""; // entry options
 	}
 
 	/**
-	 * Apply the plugin
+	 * Apply the plugin，新建compiler时执行
 	 * @param {Compiler} compiler the compiler instance
 	 * @returns {void}
 	 */
@@ -42,7 +42,7 @@ class EntryPlugin {
 				);
 			}
 		);
-
+		// 配置文件中的入口文件路径、入口配置、上下文
 		const { entry, options, context } = this;
 		// entry模块对应的dependencys对象
 		const dep = EntryPlugin.createDependency(entry, options);

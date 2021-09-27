@@ -1240,6 +1240,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			this._modules.set(identifier, module);
 			// 将Factory生成的模块放入compilation.modules
 			this.modules.add(module);
+			// 设置moduleGraph
 			ModuleGraph.setModuleGraphForModule(module, this.moduleGraph);
 			if (currentProfile !== undefined) {
 				currentProfile.markIntegrationEnd();
@@ -1481,6 +1482,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				const block = queue.pop();
 				if (block.dependencies) {
 					currentBlock = block;
+					// step_make_5：对当前模块的所有依赖递归执行生成模块的步骤
 					for (const dep of block.dependencies) processDependency(dep);
 				}
 				if (block.blocks) {
@@ -1916,9 +1918,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					...options
 				}
 			};
-			// entryData.dependencies push entryDependency
+			// entryData.dependencies = [entryDependency]
 			entryData[target].push(entry);
-			// compilation.entries = entryData
+			// compilation.entries = { name: entryData }
 			this.entries.set(name, entryData);
 		} else {
 			entryData[target].push(entry);
@@ -2254,18 +2256,19 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	 * @returns {void}
 	 */
 	seal(callback) {
-		// 根据moduleGraph生成chunkGraph
+		// 初始化chunkGraph
 		const chunkGraph = new ChunkGraph(this.moduleGraph);
 		this.chunkGraph = chunkGraph;
 
 		for (const module of this.modules) {
-			// 设置 chunkGraphForModuleMap保存 module对应chunkGraph的关系
+			// 把module保存到 chunkGraphForModuleMap
+			// 后续可以通过ChunkGraph.isModuleInChunk等方法来判断module和chunk的关系
 			ChunkGraph.setChunkGraphForModule(module, chunkGraph);
 		}
 
 		this.hooks.seal.call();
-		// 优化模块，tree shaking等发生？？？根据是否是副作用更新了moduleGraph
 		this.logger.time("optimize dependencies");
+		// 优化依赖（优化moduleGraph），根据 模块是否被其他模块引用 来更新moduleGraph，根据是否是副作用来更新moduleGraph
 		while (this.hooks.optimizeDependencies.call(this.modules)) {
 			/* empty */
 		}
@@ -2278,10 +2281,11 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		this.moduleGraph.freeze();
 		/** @type {Map<Entrypoint, Module[]>} */
 		const chunkGraphInit = new Map();
-		// 新建chunk，并设置entrypoint、chunkGroup、chunkGraph
+		// 根据entry新建chunk，并设置entrypoint、chunkGroup、chunkGraph
 		for (const [name, { dependencies, includeDependencies, options }] of this
 			.entries) {
-			// 新建chunk保存到this.chunks && 初始化chunkGraph
+			// 根据entry新建chunk保存到this.chunks
+			// ChunkGraph.setChunkGraphForChunk(chunk, chunkGraph);
 			const chunk = this.addChunk(name);
 			if (options.filename) {
 				chunk.filenameTemplate = options.filename;
@@ -2299,12 +2303,13 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			this.chunkGroups.push(entrypoint);
 			connectChunkGroupAndChunk(entrypoint, chunk);
 
-			// 设置chunkGraph
+			// 修改chunkGraph
 			for (const dep of [...this.globalEntry.dependencies, ...dependencies]) {
 				entrypoint.addOrigin(null, { name }, /** @type {any} */ (dep).request);
 
 				const module = this.moduleGraph.getModule(dep);
 				if (module) {
+					// 在chunkGraph中连接chunk和它的入口module
 					chunkGraph.connectChunkAndEntryModule(chunk, module, entrypoint);
 					this.assignDepth(module);
 					const modulesList = chunkGraphInit.get(entrypoint);
@@ -2475,7 +2480,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 					this.logger.time("module hashing");
 					this.hooks.beforeModuleHash.call();
-					// 创建hash
+					// 有runtime的module创建hash
 					this.createModuleHashes();
 					this.hooks.afterModuleHash.call();
 					this.logger.timeEnd("module hashing");
@@ -2529,6 +2534,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 									}
 									this.hooks.afterProcessAssets.call(this.assets);
 									this.logger.timeEnd("process assets");
+									// 冻结assets对象
 									this.assets = soonFrozenObjectDeprecation(
 										this.assets,
 										"Compilation.assets",
@@ -3758,10 +3764,11 @@ This prevents using hashes of each other and should be avoided.`);
 			chunk.auxiliaryFiles.clear();
 		}
 	}
-
+	// 将module.buildInfo.assets存入this.assets（如图片模块），普通模块一般不会有assets
 	createModuleAssets() {
 		const { chunkGraph } = this;
 		for (const module of this.modules) {
+			// module.buildInfo.assets存在（往往是图片module的情况）
 			if (module.buildInfo.assets) {
 				const assetsInfo = module.buildInfo.assetsInfo;
 				for (const assetName of Object.keys(module.buildInfo.assets)) {
@@ -3792,7 +3799,7 @@ This prevents using hashes of each other and should be avoided.`);
 	}
 
 	/**
-	 * 编译后代码生成
+	 * 编译后每个chunk根据模版生成对应的souce
 	 * @param {Callback} callback signals when the call finishes
 	 * @returns {void}
 	 */
@@ -3801,13 +3808,14 @@ This prevents using hashes of each other and should be avoided.`);
 		const cachedSourceMap = new WeakMap();
 		/** @type {Map<string, {hash: string, source: Source, chunk: Chunk}>} */
 		const alreadyWrittenFiles = new Map();
-
+		// 遍历chunks
 		asyncLib.forEach(
 			this.chunks,
 			(chunk, callback) => {
 				/** @type {RenderManifestEntry[]} */
 				let manifest;
 				try {
+					// 根据chunk生成对应的manifest，其中manifest.render()可以根据template生成对应的source
 					manifest = this.getRenderManifest({
 						chunk,
 						hash: this.hash,
@@ -3899,6 +3907,7 @@ This prevents using hashes of each other and should be avoided.`);
 									}
 								} else if (!source) {
 									// render the asset
+									// 根据模板生成对应的代码
 									source = fileManifest.render();
 
 									// Ensure that source is a cached source to avoid additional cost because of repeated access

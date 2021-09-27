@@ -1825,7 +1825,8 @@ class JavascriptParser extends Parser {
 
 	blockPreWalkImportDeclaration(statement) {
 		const source = statement.source.value;
-		// 收集依赖：通知 HarmonyImportDependencyParserPlugin 执行 module.addDependency
+		// step_make_5: 收集依赖：通知 HarmonyImportDependencyParserPlugin 执行 module.addDependency
+		// commonjs是用其他钩子
 		this.hooks.import.call(statement, source);
 		for (const specifier of statement.specifiers) {
 			const name = specifier.local.name;
@@ -3265,7 +3266,7 @@ class JavascriptParser extends Parser {
 			comments = source.comments;
 		} else {
 			comments = [];
-			// 生成ast，内部调用了acorn
+			// step_make_4：生成ast，内部调用了acorn
 			ast = JavascriptParser._parse(source, {
 				sourceType: this.sourceType,
 				onComment: comments,
@@ -3295,11 +3296,11 @@ class JavascriptParser extends Parser {
 		this.prevStatement = undefined;
 		if (this.hooks.program.call(ast, comments) === undefined) {
 			this.detectMode(ast.body);
-			// 遍历ast节点
 			this.preWalkStatements(ast.body);
 			this.prevStatement = undefined;
 			this.blockPreWalkStatements(ast.body);
 			this.prevStatement = undefined;
+			// step_make_5：遍历ast节点
 			this.walkStatements(ast.body);
 		}
 		this.hooks.finish.call(ast, comments);

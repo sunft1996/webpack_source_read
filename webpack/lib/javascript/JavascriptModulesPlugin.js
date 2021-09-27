@@ -233,7 +233,7 @@ class JavascriptModulesPlugin {
 								chunk,
 								outputOptions
 							);
-						// todo: 热更新？？？？
+						// 热更新
 						if (hotUpdateChunk) {
 							render = () =>
 								this.renderChunk(
@@ -248,6 +248,7 @@ class JavascriptModulesPlugin {
 									hooks
 								);
 						} else if (chunk.hasRuntime()) {
+							//  main chunk（包含入口模块的chunk）必然应该有runtime运行时，因此应该执行renderMain
 							render = () =>
 								this.renderMain(
 									{
@@ -282,6 +283,7 @@ class JavascriptModulesPlugin {
 						}
 
 						result.push({
+							// render 方法用于根据template渲染出对应的source
 							render,
 							filenameTemplate,
 							pathOptions: {

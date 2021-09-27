@@ -70,7 +70,7 @@ const createCompiler = rawOptions => {
 	new NodeEnvironmentPlugin({
 		infrastructureLogging: options.infrastructureLogging
 	}).apply(compiler);
-	// 加载配置的所有插件，插件订阅compiler对应的hook
+	// 加载options.plugins上配置的所有插件，插件订阅compiler对应的hook
 	if (Array.isArray(options.plugins)) {
 		for (const plugin of options.plugins) {
 			if (typeof plugin === "function") {
@@ -84,6 +84,7 @@ const createCompiler = rawOptions => {
 	compiler.hooks.environment.call();
 	compiler.hooks.afterEnvironment.call();
 	// 将webpack的options标准化
+	// 加载默认的plugins，插件订阅compiler对应的hook
 	new WebpackOptionsApply().process(options, compiler);
 	compiler.hooks.initialize.call();
 	return compiler;
@@ -97,7 +98,7 @@ const createCompiler = rawOptions => {
  */
 
 /**
- * 生成compiler对象
+ * 生成compiler对象，运行compiler.run()
  * @callback WebpackFunctionMulti
  * @param {ReadonlyArray<WebpackOptions> & MultiCompilerOptions} options options objects
  * @param {Callback<MultiStats>=} callback callback

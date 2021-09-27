@@ -51,10 +51,10 @@ const config = {
   plugins: [
     new VueLoaderPlugin(),
   //   new webpack.HotModuleReplacementPlugin(),
-    new HtmlWebpackPlugin({
-      template: './test-vue/index.html',
-      filename: 'index.html' // 生成的文件名
-    }),
+    // new HtmlWebpackPlugin({
+    //   template: './test-vue/index.html',
+    //   filename: 'index.html' // 生成的文件名
+    // }),
   ],
   // devServer: {
   //   hot: true,

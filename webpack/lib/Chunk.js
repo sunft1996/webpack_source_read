@@ -423,6 +423,7 @@ class Chunk {
 	// BACKWARD-COMPAT END
 
 	/**
+	 * chunk是否应该有运行时（chunk包含入口模块时，必须有运行时）
 	 * @returns {boolean} whether or not the Chunk will have a runtime
 	 */
 	hasRuntime() {

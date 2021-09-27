@@ -17,7 +17,7 @@ class WebpackCLI {
         this.logger = utils.logger;
         this.utils = utils;
 
-        // 初始化webpack命令
+        // 利用commander包定义webpack命令（一级命令）
         this.program = program;
         this.program.name('webpack');
         this.program.configureOutput({
@@ -640,7 +640,7 @@ class WebpackCLI {
 
     /**
      * 核心函数：
-     * 定义webpack命令和它的二级命令
+     * 定义webpack命令的默认行为和它的二级命令
      */    
     async run(args, parseOptions) {
         // build命令的描述对象，定义build命令时会用到
