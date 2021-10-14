@@ -1108,7 +1108,7 @@ ${other}`);
 
 					process.nextTick(() => {
 						logger.time("finish compilation");
-						// 主要功能：提示模块的警告和错误
+						// 主要功能：命令行输出make过程中的警告和错误
 						compilation.finish(err => {
 							logger.timeEnd("finish compilation");
 							if (err) return callback(err);

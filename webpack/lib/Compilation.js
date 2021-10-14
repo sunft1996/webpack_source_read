@@ -2260,6 +2260,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		const chunkGraph = new ChunkGraph(this.moduleGraph);
 		this.chunkGraph = chunkGraph;
 
+		// 将所有module保存到chunkGraph
 		for (const module of this.modules) {
 			// 把module保存到 chunkGraphForModuleMap
 			// 后续可以通过ChunkGraph.isModuleInChunk等方法来判断module和chunk的关系
@@ -2268,7 +2269,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 
 		this.hooks.seal.call();
 		this.logger.time("optimize dependencies");
-		// 优化依赖（优化moduleGraph），根据 模块是否被其他模块引用 来更新moduleGraph，根据是否是副作用来更新moduleGraph
+		// 优化依赖（优化moduleGraph），根据 模块是否被其他模块使用 来更新moduleGraph，根据是否是副作用来更新moduleGraph
 		while (this.hooks.optimizeDependencies.call(this.modules)) {
 			/* empty */
 		}
@@ -2425,7 +2426,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 			/* empty */
 		}
 		this.hooks.afterOptimizeModules.call(this.modules);
-		// SplitChunksPlugin 订阅了这个hook，新建chunk，并修改chunkGraph
+		// SplitChunksPlugin 订阅了这个hook，若开启了代码分离，则拆分chunk，并修改chunkGraph
 		while (this.hooks.optimizeChunks.call(this.chunks, this.chunkGroups)) {
 			/* empty */
 		}
@@ -2487,6 +2488,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 					this.logger.time("code generation");
 					this.hooks.beforeCodeGeneration.call();
+					// 生成asset
 					this.codeGeneration(err => {
 						if (err) {
 							return callback(err);
@@ -2502,6 +2504,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 
 						this.logger.time("hashing");
 						this.hooks.beforeHash.call();
+						// 创建hash
 						const codeGenerationJobs = this.createHash();
 						this.hooks.afterHash.call();
 						this.logger.timeEnd("hashing");
@@ -2521,6 +2524,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 							this.clearAssets();
 
 							this.hooks.beforeModuleAssets.call();
+							// 静态资源存入this.assets
 							this.createModuleAssets();
 							this.logger.timeEnd("module assets");
 
@@ -2568,6 +2572,7 @@ Or do you want to use the entrypoints '${name}' and '${runtime}' independently o
 							this.logger.time("create chunk assets");
 							if (this.hooks.shouldGenerateChunkAssets.call() !== false) {
 								this.hooks.beforeChunkAssets.call();
+								// 生成chunk assets
 								this.createChunkAssets(err => {
 									this.logger.timeEnd("create chunk assets");
 									if (err) {
@@ -3779,6 +3784,7 @@ This prevents using hashes of each other and should be avoided.`);
 					for (const chunk of chunkGraph.getModuleChunksIterable(module)) {
 						chunk.auxiliaryFiles.add(fileName);
 					}
+					// this.assets = xxxx
 					this.emitAsset(
 						fileName,
 						module.buildInfo.assets[assetName],
