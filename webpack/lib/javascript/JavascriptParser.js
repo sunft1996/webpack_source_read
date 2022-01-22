@@ -3153,6 +3153,7 @@ class JavascriptParser extends Parser {
 			.setExpression(expression);
 	}
 
+	// 解析require后的内容，require后可能是字面量，也可能是表达式
 	parseString(expression) {
 		switch (expression.type) {
 			case "BinaryExpression":
