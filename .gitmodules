@@ -1,3 +1,6 @@
 [submodule "plugins/mini-css-extract-plugin-source-read"]
 	path = plugins/mini-css-extract-plugin-source-read
 	url = git@github.com:sunft1996/mini-css-extract-plugin-source-read.git
+[submodule "plugins/speed-measure-webpack-plugin-source-read"]
+	path = plugins/speed-measure-webpack-plugin-source-read
+	url = git@github.com:sunft1996/speed-measure-webpack-plugin-source-read.git
