@@ -187,6 +187,7 @@ const compilationHooksMap = new WeakMap();
 
 class NormalModule extends Module {
 	/**
+	 * Moudule的hook
 	 * @param {Compilation} compilation the compilation
 	 * @returns {NormalModuleCompilationHooks} the attached hooks
 	 */
@@ -205,6 +206,7 @@ class NormalModule extends Module {
 					() => new AsyncSeriesBailHook(["resource", "module"])
 				)
 			};
+			// TODO: 为何loaderContext没有共享
 			compilationHooksMap.set(compilation, hooks);
 		}
 		return hooks;
@@ -618,7 +620,7 @@ class NormalModule extends Module {
 		};
 
 		Object.assign(loaderContext, options.loader);
-
+		// 触发NormalModule的loader hook(每个moudule也有Hook)
 		NormalModule.getCompilationHooks(compilation).loader.call(
 			loaderContext,
 			this

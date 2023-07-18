@@ -1,0 +1,3 @@
+[submodule "plugins/mini-css-extract-plugin-source-read"]
+	path = plugins/mini-css-extract-plugin-source-read
+	url = git@github.com:sunft1996/mini-css-extract-plugin-source-read.git
