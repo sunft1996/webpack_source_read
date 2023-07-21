@@ -2,12 +2,13 @@ const path = require('path')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const webpack = require('webpack')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const config = {
   mode: 'development',
   entry: {
-    // test: './test/index.js',
-    testVue: './test-vue/main.js',
+    test: './test/index.js',
+    // testVue: './test-vue/main.js',
     // testAssets: './test-assets/index.js'
   },
   output: {
@@ -37,9 +38,10 @@ const config = {
       {
         test: /\.css$/,
         use: [
-          'style-loader',
+          MiniCssExtractPlugin.loader,
           'css-loader',
-        ]
+        ],
+        exclude: /node_modules/
       },
     ]
   },
@@ -50,6 +52,7 @@ const config = {
   },
   plugins: [
     new VueLoaderPlugin(),
+    new MiniCssExtractPlugin()
   //   new webpack.HotModuleReplacementPlugin(),
     // new HtmlWebpackPlugin({
     //   template: './test-vue/index.html',

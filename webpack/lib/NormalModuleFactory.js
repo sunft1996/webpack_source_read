@@ -344,6 +344,7 @@ class NormalModuleFactory extends ModuleFactory {
 				} = data;
 				const dependencyType =
 					(dependencies.length > 0 && dependencies[0].category) || "";
+				// 获取Loader解析器，用来解析Loader路径 
 				const loaderResolver = this.getResolver("loader");
 
 				/** @type {ResourceData | undefined} */

@@ -1309,7 +1309,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					this.hooks.stillValidModule.call(module);
 					return callback();
 				}
-
+				// 写插件时这个hook很有用，可以在loader转化前修改模块
 				this.hooks.buildModule.call(module);
 				this.builtModules.add(module);
 				module.build(
@@ -2022,6 +2022,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 	}
 	// 结束编译，提示模块的警告和错误
 	finish(callback) {
+		// 输入webpack --profile，统计编译耗时并输入到终端
 		if (this.profile) {
 			this.logger.time("finish module profiles");
 			const ParallelismFactorCalculator = require("./util/ParallelismFactorCalculator");
@@ -2109,6 +2110,9 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					`${Math.round(sum)} ms ${category}`
 				);
 			};
+			/**
+			 * 统计loader耗时，因此webpack5不再需要speed-measure-webpack-plugin做速度分析
+			 */			
 			const logByLoadersSummary = (category, getDuration, getParallelism) => {
 				const map = new Map();
 				for (const [module, profile] of modulesWithProfiles) {
