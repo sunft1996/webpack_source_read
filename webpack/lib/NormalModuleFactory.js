@@ -695,6 +695,7 @@ class NormalModuleFactory extends ModuleFactory {
 			contextInfo,
 			resolveOptions,
 			context,
+			// module.Identifier() 模块标识符，包含当前loader信息
 			request,
 			dependencies,
 			fileDependencies,

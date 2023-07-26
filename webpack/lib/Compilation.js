@@ -907,6 +907,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			parent: this.addModuleQueue,
 			processor: this._factorizeModule.bind(this)
 		});
+		// build的异步队列，用于处理异步任务 并 控制并行数
 		/** @type {AsyncQueue<Module, Module, Module>} */
 		this.buildQueue = new AsyncQueue({
 			name: "build",
@@ -2114,6 +2115,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			 * 统计loader耗时，因此webpack5不再需要speed-measure-webpack-plugin做速度分析
 			 */			
 			const logByLoadersSummary = (category, getDuration, getParallelism) => {
+				// map结构： { 模块类型 + ?loader: [{module: moduleProfile}, ...]}
 				const map = new Map();
 				for (const [module, profile] of modulesWithProfiles) {
 					const list = provide(
@@ -2129,6 +2131,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				for (const [key, modules] of map) {
 					let innerSum = 0;
 					let innerMax = 0;
+					// 打印单个模块构建时长
 					for (const { module, profile } of modules) {
 						const p = getParallelism(profile);
 						const d = getDuration(profile);
@@ -2152,6 +2155,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					const loaders = key.slice(idx + 1);
 					const moduleType = key.slice(0, idx);
 					const t = Math.max(innerSum / 10, innerMax);
+					// 打印：时长 操作类型 > 模块数量 x 模块类型 with loader(多个，也是按照buildModule时的Loader来)
 					logByValue(
 						t,
 						` | ${Math.round(innerSum)} ms ${category} > ${
