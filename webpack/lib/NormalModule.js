@@ -263,6 +263,7 @@ class NormalModule extends Module {
 		this.generator = generator;
 		this.generatorOptions = generatorOptions;
 		/** @type {string} */
+		// 模块的资源路径，在loader中通过this.resourcePath获取
 		this.resource = resource;
 		this.resourceResolveData = resourceResolveData;
 		/** @type {string | undefined} */
@@ -293,6 +294,8 @@ class NormalModule extends Module {
 	}
 
 	/**
+	 * 模块的唯一标识，resourcePath + 当前build阶段的module.loaders路径
+	 * 在模块build时会发生变化
 	 * @returns {string} a unique identifier of the module
 	 */
 	identifier() {
