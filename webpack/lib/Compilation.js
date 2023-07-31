@@ -1291,6 +1291,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 		const currentProfile = this.profile
 			? this.moduleGraph.getProfile(module)
 			: undefined;
+		// profile中标记开始build时间
 		if (currentProfile !== undefined) {
 			currentProfile.markBuildingStart();
 		}
@@ -2030,13 +2031,16 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			const p = new ParallelismFactorCalculator();
 			const moduleGraph = this.moduleGraph;
 			const modulesWithProfiles = new Map();
+			// 计算所有module.profile中各阶段的并发系数
 			for (const module of this.modules) {
+				// 获取profile
 				const profile = moduleGraph.getProfile(module);
 				if (!profile) continue;
 				modulesWithProfiles.set(module, profile);
 				p.range(
 					profile.buildingStartTime,
 					profile.buildingEndTime,
+					// 设置模块的build并发系数(当前模块build时，同时有多少个模块在build)
 					f => (profile.buildingParallelismFactor = f)
 				);
 				p.range(
@@ -2071,6 +2075,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					}
 				}
 			}
+			// 计算当前模块的【并发系数】（指的是当前模块在各个阶段同时有多少模块在并发处理）
 			p.calculate();
 
 			const logger = this.getLogger("webpack.Compilation.ModuleProfile");
@@ -2088,12 +2093,15 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				}
 			};
 			const logNormalSummary = (category, getDuration, getParallelism) => {
+				// 某个阶段(如factory) - 所有模块总耗时
 				let sum = 0;
 				let max = 0;
 				for (const [module, profile] of modulesWithProfiles) {
 					const p = getParallelism(profile);
 					const d = getDuration(profile);
 					if (d === 0 || p === 0) continue;
+					// p = 当前模块某阶段 所有并发模块总时长 / 当前模块处理时长
+					// t = 当前模块某阶段 所有并发模块总时长（如果是d * p），d / p是什么？？？
 					const t = d / p;
 					sum += t;
 					if (t <= 10) continue;
@@ -2129,15 +2137,20 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				let sum = 0;
 				let max = 0;
 				for (const [key, modules] of map) {
+					// build阶段 - 某类型所有模块总耗时
 					let innerSum = 0;
 					let innerMax = 0;
 					// 打印单个模块构建时长
 					for (const { module, profile } of modules) {
+						// 构建的并发系数
 						const p = getParallelism(profile);
+						// 构建的持续时间
 						const d = getDuration(profile);
 						if (d === 0 || p === 0) continue;
+						// t = 当前模块某阶段 所有并发模块总时长
 						const t = d / p;
 						innerSum += t;
+						// 并发总时长<= 10的模块不打印耗时
 						if (t <= 10) continue;
 						logByValue(
 							t,
@@ -2150,6 +2163,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 						innerMax = Math.max(innerMax, t);
 					}
 					sum += innerSum;
+					// 并发总时长<= 10的模块类型不打印耗时
 					if (innerSum <= 10) continue;
 					const idx = key.indexOf("!");
 					const loaders = key.slice(idx + 1);

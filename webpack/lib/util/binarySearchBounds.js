@@ -77,6 +77,7 @@ return dispatchBinarySearch";
 	return result();
 };
 
+// 根据不同条件生成二分查找函数
 module.exports = {
 	ge: compileBoundsSearch(">=", false, "GE"),
 	gt: compileBoundsSearch(">", false, "GT"),

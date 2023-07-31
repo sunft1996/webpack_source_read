@@ -1,3 +1,7 @@
+/**
+ * 模块的profile对象，包含模块的所有构建信息
+ */
+
 /*
 	MIT License http://www.opensource.org/licenses/mit-license.php
 	Author Tobias Koppers @sokra
@@ -23,10 +27,13 @@ class ModuleProfile {
 		this.integrationEndTime = 0;
 		this.integration = 0;
 		this.integrationParallelismFactor = 0;
-
+		// 构建开始时间
 		this.buildingStartTime = 0;
+		// 构建结束时间
 		this.buildingEndTime = 0;
+		// 构建结束时间 - 开始时间
 		this.building = 0;
+		// 构建并发系数（build同时可能还进行了下一个 or 上一个操作，如storing）
 		this.buildingParallelismFactor = 0;
 
 		this.storingStartTime = 0;
