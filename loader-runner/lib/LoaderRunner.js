@@ -2,6 +2,23 @@
 	MIT License http://www.opensource.org/licenses/mit-license.php
 	Author Tobias Koppers @sokra
 */
+/**
+ * loader执行顺序： [loaderA, loaderB, loaderC]
+ * 	loaderA.pitch => loaderB.pitch => loaderC.pitch
+ *  loaderC => loaderB => loaderA
+ * 
+ * 如果中途有pitch函数有返回值，“回头”
+ * 	loaderA.pitch => loaderB.pitch => loaderA
+ * 
+ * pitch的目的：
+ * 	1. 给后面的loader共享this.data数据
+ *  2. 回头，避免执行loader
+ *  3. 预先处理模块（热更新?）
+ * 
+ * 其他：多个文件引用一个模块，它只会被转化一次（style-loader就用了这一点）？？？
+ *  	https://www.w3xue.com/exp/article/20233/82180.html
+ *  
+ */
 var fs = require("fs");
 var readFile = fs.readFile.bind(fs);
 var loadLoader = require("./loadLoader");
