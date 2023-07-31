@@ -179,7 +179,10 @@ class HotModuleReplacementPlugin {
 			return true;
 		};
 
+		// HMR功能应用于解析器（parser）
 		const applyModuleHot = parser => {
+			// evaluateIdentifier 标识符钩子，parser执行到标识符（变量名、函数名等）时触发
+			// parser解析到 `module.hot`时
 			parser.hooks.evaluateIdentifier.for("module.hot").tap(
 				{
 					name: "HotModuleReplacementPlugin",
