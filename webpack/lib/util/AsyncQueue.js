@@ -117,10 +117,11 @@ class AsyncQueue {
 			}
 			const key = this._getKey(item);
 			const entry = this._entries.get(key);
+			// 任务是否存在
 			if (entry !== undefined) {
 				if (entry.state === DONE_STATE) {
 					if (inHandleResult++ > 3) {
-						process.nextTick(() => callback(entry.error, entry.result));
+						process.nextTick(() => callbackcallback(entry.error, entry.result));
 					} else {
 						callback(entry.error, entry.result);
 					}
@@ -132,6 +133,7 @@ class AsyncQueue {
 				}
 				return;
 			}
+			// 新建任务
 			const newEntry = new AsyncQueueEntry(item, callback);
 			if (this._stopped) {
 				this.hooks.added.call(item);
@@ -140,12 +142,15 @@ class AsyncQueue {
 					this._handleResult(newEntry, new WebpackError("Queue was stopped"))
 				);
 			} else {
+				// 存储任务map，用于快速获取任务
 				this._entries.set(key, newEntry);
+				// 存入队列
 				this._queued.enqueue(newEntry);
 				const root = this._root;
 				root._needProcessing = true;
 				if (root._willEnsureProcessing === false) {
 					root._willEnsureProcessing = true;
+					// 调用this._ensureProcessing
 					setImmediate(root._ensureProcessing);
 				}
 				this.hooks.added.call(item);
@@ -182,9 +187,12 @@ class AsyncQueue {
 				)
 			);
 		}
+		// 任务状态完成
 		if (entry.state === DONE_STATE) {
+			// 执行回调
 			process.nextTick(() => callback(entry.error, entry.result));
 		} else if (entry.callbacks === undefined) {
+			// 存入任务完成回调
 			entry.callbacks = [callback];
 		} else {
 			entry.callbacks.push(callback);
@@ -258,16 +266,22 @@ class AsyncQueue {
 	}
 
 	/**
+	 * 确保队列中的任务得到处理，即使并发任务的数量还没有达到最大并发数。
+	 * 它会持续从队列中取出任务并开始处理，直到达到最大并发数或队列中没有待处理的任务为止
 	 * @returns {void}
 	 */
 	_ensureProcessing() {
+		// 核心代码
 		while (this._activeTasks < this._parallelism) {
+			// 任务出队
 			const entry = this._queued.dequeue();
 			if (entry === undefined) break;
 			this._activeTasks++;
 			entry.state = PROCESSING_STATE;
+			// 开始处理任务
 			this._startProcessing(entry);
 		}
+		// 处理完成
 		this._willEnsureProcessing = false;
 		if (this._queued.length > 0) return;
 		if (this._children !== undefined) {
@@ -286,6 +300,7 @@ class AsyncQueue {
 	}
 
 	/**
+	 * 处理任务
 	 * @param {AsyncQueueEntry<T, K, R>} entry the entry
 	 * @returns {void}
 	 */
@@ -300,6 +315,7 @@ class AsyncQueue {
 			}
 			let inCallback = false;
 			try {
+				// 调用处理器处理任务，如：compilation._buildModule()
 				this._processor(entry.item, (e, r) => {
 					inCallback = true;
 					this._handleResult(entry, e, r);
@@ -313,9 +329,10 @@ class AsyncQueue {
 	}
 
 	/**
-	 * @param {AsyncQueueEntry<T, K, R>} entry the entry
+	 * 处理任务执行结果
+	 * @param {AsyncQueueEntry<T, K, R>} entry the entry: 任务
 	 * @param {WebpackError=} err error, if any
-	 * @param {R=} result result, if any
+	 * @param {R=} result result 执行结果
 	 * @returns {void}
 	 */
 	_handleResult(entry, err, result) {
@@ -326,6 +343,7 @@ class AsyncQueue {
 
 			const callback = entry.callback;
 			const callbacks = entry.callbacks;
+			// 将任务标记为已完成状态，并清空回调函数
 			entry.state = DONE_STATE;
 			entry.callback = undefined;
 			entry.callbacks = undefined;
@@ -333,12 +351,16 @@ class AsyncQueue {
 			entry.error = error;
 
 			const root = this._root;
+			// 减少活跃任务数，确保任务不会超出最大并发数
 			root._activeTasks--;
+
+			// 如果还有待处理的任务，而且不是确保处理状态，则设置为确保处理状态
 			if (root._willEnsureProcessing === false && root._needProcessing) {
 				root._willEnsureProcessing = true;
 				setImmediate(root._ensureProcessing);
 			}
 
+			// 确保任务完成后才触发回调，因为有些任务内部包含异步操作
 			if (inHandleResult++ > 3) {
 				process.nextTick(() => {
 					callback(error, result);

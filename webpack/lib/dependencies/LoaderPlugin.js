@@ -64,6 +64,7 @@ class LoaderPlugin {
 
 		compiler.hooks.compilation.tap("LoaderPlugin", compilation => {
 			const moduleGraph = compilation.moduleGraph;
+			// module.build loader处理模块前触发
 			NormalModule.getCompilationHooks(compilation).loader.tap(
 				"LoaderPlugin",
 				loaderContext => {

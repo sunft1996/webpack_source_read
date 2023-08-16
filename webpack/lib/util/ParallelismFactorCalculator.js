@@ -63,7 +63,7 @@ class ParallelismFactorCalculator {
 			const start = this._rangePoints[i * 2];
 			const end = this._rangePoints[i * 2 + 1];
 			let idx = rangeStartIndices[i];
-			// 当前开始时间内所有并发操作的总耗时
+			// 当前build开始时间 => 结束时间所有并发操作的总耗时
 			let sum = 0;
 			// 当前开始时间 => 并发中最后一时间段 总间隔
 			let totalDuration = 0;
@@ -80,7 +80,7 @@ class ParallelismFactorCalculator {
 				current = segments[idx];
 				sum += p * duration;
 			} while (current < end);
-			// 调用回调，设置build/factory等阶段的并发系数 (即：sum / totalDuration，每ms的平均并发量？)
+			// 调用回调，设置build/factory等阶段的并发系数 (即：sum / totalDuration，每ms的平均并发量 => 该时间段内的平均并发量)
 			this._rangeCallbacks[i](sum / totalDuration);
 		}
 	}

@@ -33,7 +33,7 @@ class ModuleProfile {
 		this.buildingEndTime = 0;
 		// 构建结束时间 - 开始时间
 		this.building = 0;
-		// 构建并发系数（build同时可能还进行了下一个 or 上一个操作，如storing）
+		// 构建并发系数（并发量、同时有多少模块在构建）
 		this.buildingParallelismFactor = 0;
 
 		this.storingStartTime = 0;

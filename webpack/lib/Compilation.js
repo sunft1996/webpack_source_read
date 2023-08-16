@@ -2040,7 +2040,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				p.range(
 					profile.buildingStartTime,
 					profile.buildingEndTime,
-					// 设置模块的build并发系数(当前模块build时，同时有多少个模块在build)
+					// 设置模块的build并发量(当前模块build时，同时有多少个模块在build)
 					f => (profile.buildingParallelismFactor = f)
 				);
 				p.range(
@@ -2128,6 +2128,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 				for (const [module, profile] of modulesWithProfiles) {
 					const list = provide(
 						map,
+						// key: 包含module.identifier()，里面包含所有Loader
 						module.type + "!" + module.identifier().replace(/(!|^)[^!]*$/, ""),
 						() => []
 					);
@@ -2142,12 +2143,12 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					let innerMax = 0;
 					// 打印单个模块构建时长
 					for (const { module, profile } of modules) {
-						// 构建的并发系数
+						// 构建的并发量
 						const p = getParallelism(profile);
 						// 构建的持续时间
 						const d = getDuration(profile);
 						if (d === 0 || p === 0) continue;
-						// t = 当前模块某阶段 所有并发模块总时长
+						// t = 持续时间 / 并发量
 						const t = d / p;
 						innerSum += t;
 						// 并发总时长<= 10的模块不打印耗时
@@ -2166,6 +2167,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 					// 并发总时长<= 10的模块类型不打印耗时
 					if (innerSum <= 10) continue;
 					const idx = key.indexOf("!");
+					// build时的所有Loader
 					const loaders = key.slice(idx + 1);
 					const moduleType = key.slice(0, idx);
 					const t = Math.max(innerSum / 10, innerMax);
@@ -4094,6 +4096,7 @@ This prevents using hashes of each other and should be avoided.`);
 			(module, push, callback) => {
 				this.addModuleQueue.waitFor(module, err => {
 					if (err) return callback(err);
+					// buildQueue空闲时执行 module.build
 					this.buildQueue.waitFor(module, err => {
 						if (err) return callback(err);
 						this.processDependenciesQueue.waitFor(module, err => {
