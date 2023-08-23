@@ -268,6 +268,7 @@ class SourceMapDevToolPlugin {
 									"generate SourceMap"
 								);
 
+								// 生成sourceMap
 								/** @type {SourceMapTask | undefined} */
 								const task = getTaskForFile(
 									file,

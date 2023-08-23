@@ -1,3 +1,5 @@
+// const config = require('./test-hot/webpack.config')
+// module.exports = config
 const path = require('path')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
@@ -5,11 +7,11 @@ const webpack = require('webpack')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 
 const config = {
-  mode: 'development',
+  mode: 'production',
   entry: {
-    test: './test/index.js',
+    // test: './test/index.js',
     // testVue: './test-vue/main.js',
-    // testAssets: './test-assets/index.js'
+    testAssets: './test-assets/index.js'
   },
   output: {
     filename: '[name].[chunkhash].js',
@@ -20,6 +22,8 @@ const config = {
     rules: [
       {
         test: /\.(png|jpe?g|gif)$/i,
+        // type: 'asset/inline',
+        // type: 'asset/resource'
         use: [
           {
             loader: 'file-loader',
@@ -29,7 +33,11 @@ const config = {
       {
         test: /\.js$/,
         loader: 'babel-loader',
+        options: {
+          presets: ['@babel/preset-env'],
+        },
         exclude: /node_modules/,
+
       },
       {
         test: /\.vue$/,
@@ -52,7 +60,12 @@ const config = {
   },
   plugins: [
     new VueLoaderPlugin(),
-    new MiniCssExtractPlugin()
+    new MiniCssExtractPlugin(),
+    new webpack.DefinePlugin({
+      TWO: '1+1',
+      TWO1: 1+1,
+      'typeof window': JSON.stringify('object'),
+    })
   //   new webpack.HotModuleReplacementPlugin(),
     // new HtmlWebpackPlugin({
     //   template: './test-vue/index.html',

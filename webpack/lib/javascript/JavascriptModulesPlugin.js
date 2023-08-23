@@ -464,6 +464,7 @@ class JavascriptModulesPlugin {
 	}
 
 	/**
+	 * module._source添加运行时代码
 	 * @param {Module} module the rendered module
 	 * @param {RenderContext} renderContext options object
 	 * @param {CompilationHooks} hooks hooks

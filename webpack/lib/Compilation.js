@@ -1304,6 +1304,7 @@ BREAKING CHANGE: Asset processing hooks in Compilation has been merged into a si
 			(err, needBuild) => {
 				if (err) return callback(err);
 
+				// HMR时不会build
 				if (!needBuild) {
 					if (currentProfile !== undefined) {
 						currentProfile.markBuildingEnd();
